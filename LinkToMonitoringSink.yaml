@@ -1,0 +1,29 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Creates an OAM link from a source account to a monitoring sink account.
+
+Parameters:
+  MonitoringAccountId:
+    Type: String
+    Description: AWS Account ID of the monitoring account (12 digits)
+    AllowedPattern: "^[0-9]{12}$"
+  SinkIdentifier:
+    Type: String
+    Description: Full ARN of the OAM sink in the monitoring account
+
+Conditions:
+  SkipMonitoringAccount: !Not
+    - !Equals
+      - !Ref AWS::AccountId
+      - !Ref MonitoringAccountId
+
+Resources:
+  Link:
+    Type: AWS::Oam::Link
+    Condition: SkipMonitoringAccount
+    Properties:
+      LabelTemplate: "$AccountName"
+      ResourceTypes:
+        - "AWS::CloudWatch::Metric"
+        - "AWS::Logs::LogGroup"
+        - "AWS::XRay::Trace"
+      SinkIdentifier: !Ref SinkIdentifier
